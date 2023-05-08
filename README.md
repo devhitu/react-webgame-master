@@ -285,7 +285,7 @@ create react app
 But,기본원리를 이해할 수 없음(비추)
 ```
 
-### 🟨 [2-4. 모듈 시스템과 웹팩 설정](https://youtu.be/jQh5_jvZVzI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+### 🟨 [2-4. 모듈 시스템과 웹팩 설정](https://youtu.be/jQh5_jvZVzI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn) ~ [2-5. 웹팩으로 빌드하기](https://youtu.be/PTz9z_n_UpY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
 ```js
 ✔ 쪼개었던 파일들을 필요에 따라 불러옴
 
@@ -295,25 +295,34 @@ const WordRelay = require('./WordRelay');
 
 ReactDom.render(<WordRelay />, document.querySelector('#root'))
 ```
-- /webpack.config.js에서 파일을 합쳐줌
 ```js
-  const path = require('path'); //경로 조작을 쉽게
+✔ webpack.config.js에서 파일을 합쳐줌
 
-  entry: { 
-    app: './client',
-  }, //입력
-  output: {
-    path: path.join(__dirname, 'dist'), //경로를 합쳐줌
-  }, //출력
+const path = require('path'); //경로 조작을 쉽게
+resolve: {
+  extensions: ['.js', '.jsx'], //확장자(알아서 웹팩이 찾아냄)
+},
+entry: { 
+  app: './client', //확장자생략
+}, //입력
+output: {
+  path: path.join(__dirname, 'dist'), //경로를 합쳐줌
+}, //출력
 ```
-### 🟩 [2-4. ]()
-### 🟦 [2-5. ]()
-### 🟪 [2-6. ]()
-### 🟫 [2-7. ]()
-### ⬛ [2-8. ]()
-### ⬜ [2-9. ]()
-### 🔳 [2-10.]()
-### 🔲 [2-11.]()
+```js
+npm init
+npm i react react-dom
+npm i -D webpack webpack-cli
+npm i -D @babel/core @babel/preset-env @babel/preset-react babel-loader
+```
+### 🟩 
+### 🟦 [2-6. ]()
+### 🟪 [2-7. ]()
+### 🟫 [2-8. ]()
+### ⬛ [2-9. ]()
+### ⬜ [2-10. ]()
+### 🔳 [2-11.]()
+### 🔲 [2-12.]()
 
 
 * * *
