@@ -8,9 +8,9 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
   },
-  entry: {
+  entry: { 
     app: './client',
-  },
+  }, //입력
   module: {
     rules: [{
       test: /\.jsx?$/,
@@ -35,7 +35,7 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     filename: '[name].js',
     publicPath: '/dist',
-  },
+  }, //출력
   devServer: {
     devMiddleware: { publicPath: '/dist' },
     static: { directory: path.resolve(__dirname) },
