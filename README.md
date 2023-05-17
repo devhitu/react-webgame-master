@@ -4,8 +4,8 @@
 
 ## 목차
 [1 React Class](#1-React-Class)  
-[2 Hooks 및 웹팩설치](#2-Hooks-및-웹팩설치)
-[3 ](#3-)  
+[2 Hooks 및 웹팩설치](#2-Hooks-및-웹팩설치)  
+[3 React에서 사용하는 함수와 숫자야구](#3-React에서-사용하는-함수와-숫자야구)  
 [4 ](#4-)  
 [5 ](#5-)  
 [6 ](#6-)  
@@ -285,7 +285,7 @@ create react app
 But,기본원리를 이해할 수 없음(비추)
 ```
 
-### 🟨 [2-4. 모듈 시스템과 웹팩 설정](https://youtu.be/jQh5_jvZVzI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn) ~ [2-5. 웹팩으로 빌드하기](https://youtu.be/PTz9z_n_UpY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+### 🟨 [2-4. 모듈 시스템과 웹팩 설정](https://youtu.be/jQh5_jvZVzI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn) ~ [2-7. @babel/preset-env와 plugins](https://youtu.be/LoMFC4kdrnQ?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
 ```js
 ✔ 쪼개었던 파일들을 필요에 따라 불러옴
 
@@ -308,26 +308,187 @@ entry: {
 output: {
   path: path.join(__dirname, 'dist'), //경로를 합쳐줌
 }, //출력
+.
+.
+.
+
 ```
+- 참고사항 : [웹팩 사이트](https://webpack.js.org/concepts/)
+
+### 🟩 [2-8. 끝말잇기 Class 만들기](https://youtu.be/KDJNjLZrqJk?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
 ```js
-npm init
-npm i react react-dom
-npm i -D webpack webpack-cli
-npm i -D @babel/core @babel/preset-env @babel/preset-react babel-loader
+  render() {
+    return (
+      <>
+        <div>{this.state.word}</div>
+        <form onSubmit={this.onSubmitForm}>
+          <input ref={this.onRefInput} value={this.state.value} onChange={this.onChangeInput} /> 
+          <button>클릭!!!</button>
+        </form>
+        <div>{this.state.result}</div>
+      </>
+    );
+  }
+
+  ✔ onChage, value가 없으면 defaultValue를 넣어야 함
+  ✔ 자동으로 빌드를 해주는 설정을 하지않는다면 런타임 오류가 남
+  ✔ 수동으로 하면 매번 빌드를 해주기 귀찮음
 ```
-### 🟩 
-### 🟦 [2-6. ]()
-### 🟪 [2-7. ]()
-### 🟫 [2-8. ]()
-### ⬛ [2-9. ]()
-### ⬜ [2-10. ]()
-### 🔳 [2-11.]()
-### 🔲 [2-12.]()
+### 🟦 [2-9. 웹팩 데브 서버와 핫 리로딩(2021년 버전 )](https://youtu.be/RCb0UF7Lu90?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 미래에서 온 제로초
+```js
+1. 기존 웹팩 명령어
+"scripts":{
+  "dev" : "webpack serve --hot"
+}
 
+2. 바뀐 웹팩 명령어
+"scripts":{
+  "dev" : "webpack serve --env development"
+}
 
+3. 리프레쉬 웹팩 플러그인 추가 작성 +상단에도
+pligins : [
+  new RefreshWebpackPlugin();
+]
+
+4. front개발 편의를 위한 devsercer 작성
+- dist폴더에 결과물을 저장해줌
+- 변경점✨을 감지함
+
+```
+
+- 더 미래에서 온 제로초(2021.ver)
+```js
+1. devServer이 바뀜
+- 웹팩이 빌드한 dist폴더 =>express.static과 비슷함(node강좌에서 다룸)
+- 실제로 존재하는 파일들
+```
+- 실무에서 웹팩을 사용하니, 에러찾기도 좋고 페이지가 자동으로 바뀜👍🏼
+### 🟪 [2-10. 끝말잇기 Hooks로 전환하기](https://youtu.be/Zb70S1I6u6U?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=2)
+- class를 hooks로 전환
+- 확연히 짧아진 코드
+```js
+const React = require('react');
+const { useState } = React;
+
+const WordRelay = () => {
+  const [word, setWord] = useState('제로초'); //초기값은 '제로초' 
+  const [value, setValue] = useState('');
+  const [result, setResult] = useState('');
+  const inputEl = React.useRef(null);
+
+  const onSubmitForm = (e) => { //class가 아니기때문에 변수로 선언! 
+    e.preventDefault();
+
+    //✔ hooks를 쓰게되면 this, this.state를 사용하지않음
+    if (word[word.length - 1] === value[0]) {
+      setResult('딩동댕');
+      setWord(value);
+      setValue('');
+      inputEl.current.focus(); //ref는 current붙여줘야함
+    } else {
+      setResult('땡');
+      setValue('');
+      inputEl.current.focus();
+    }
+  };
+
+  return (
+    <>
+      <div>{word}</div>
+      <form onSubmit={onSubmitForm}>
+        <input
+          ref={inputEl} value={value} onChange={(e) => setValue(e.currentTarget.value)}
+        />
+        <button>입력!</button>
+      </form>
+      <div>{result}</div>
+    </>
+  );
+};
+
+module.exports = WordRelay;
+```
+- console창에서 [HMR]은 웹팩데브서버임
+- 어떤 컴포넌트가 바뀌어서 업데이트 해주는지 알려줌
+- 나중에 웹이 복잡해지면 console창도 복잡해짐, 그래도 보는 버릇들면 나중에 좋음
+- className, htmlFor 사용하는거 잊쥐마..
+
+### 🟫 [2-11. 컨트롤드 인풋 vs 언컨트롤드 인풋](https://youtu.be/wSs1xa8CPQI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 미래에서 온 제로초
+
+- controlled input  
+(1) value와 onchage 존재  
+(2) 더 권장함👍🏼
+
+- uncontrolled input  
+(1) value와 onchage 존재하지 않음  
+(2) 원시적인 html형태  
+(3) 앱이 간단하면 사용가능 = onsubmit에서만 특정동작을 하는 경우
 * * *
-## 3
-### 🟥 [3-1. ]()
+## 3 React에서 사용하는 함수와 숫자야구
+### 🟥 [3-1. import vs require!](https://youtu.be/3X4J2L_PhiY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- require는 node의 모듈시스템, 다른파일에서 불러올수있음
+- export는 변수, 함수, 클래스 앞에 export 키워드를 붙여서 모듈의 기능을 외부에서 사용할 수 있도록 내보냄
+- import는 export로 내보낸 모듈을 가져오는 기능을 담당
+- 웹팩에서는 노드가 돌리는거라서 import 쓰면 에러남. const사용해야함
+- 다른곳에서는 바벨이 바꿔주기때문에 import 사용해도 됨
+### 🟧 [3-2. 리액트 반복문(map)](https://youtu.be/OO5gXdPR6HI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 숫자야구  
+```js
+1. 숫자 4개를 뽑기   
+   function get Numbers()  
+   <input maxLength={4}/>  
+
+2. 10번안에 맞추기  => 사용자가 시도함으로 계속 변화함  
+  {this.state.tries.length}
+
+3. 시도하는 것을 배열로 보이기위해 반복문 사용
+  {['a','b','c','d','e','f']}.map((v)=>{
+    return <li>v</li>
+  })
+```
+### 🟨 [3-3. 리액트 반복문(key)](https://youtu.be/A-ydulnj8lk?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=2)
+```js
+1. 이중배열 반복문 예제
+  {[['a - good'],['b - good'],['c - bad'],['d - bad'],['e - good'],['f - good']]}.map((v)=>{ 
+    return <li><b>{v[0]}</b> - {v[1]}</li>
+  })
+
+2. 이차원 배열 반복문 예제
+  {[
+    {'name: a, feel: good'},
+    {'name: b, feel: good'},
+    {'name: c, feel: bad'},
+    {'name: d, feel: bad'},
+    {'name: e, feel: good'},
+    {'name: f, feel: good'}  
+  ]}.map((v)=>
+    <li><b>{v.name}</b> - {v.feel}</li> //return 생략
+  )
+
+  => 가독성 bad 👎🏼 그래서 Props👍🏼✨ 사용
+
+
+3. Key
+- key는 화면에 표시되진않지만 리액트 성능최적화(key로 바뀐걸 판단)에 사용
+- key는 중복x 고유o!!!
+- 예) key = {v.name + v.feel}
+
+```
+### 🟩 [3-4. 컴포넌트 분리와 props](https://youtu.be/6YZhSvRqddw?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1)
+### 🟦 [3-5. ]()
+### 🟪 [3-6. ]()
+### 🟫 [3-7. ]()
+### ⬛ [3-8. ]()
+### ⬜ [3-9. ]()
+### 🔳 [3-10.]()
+### 🔲 [3-11.]()
+
+***
+## 3 
+### 🟥 [3-1.]()
 ### 🟧 [3-2. ]()
 ### 🟨 [3-3. ]()
 ### 🟩 [3-4. ]()
@@ -340,6 +501,7 @@ npm i -D @babel/core @babel/preset-env @babel/preset-react babel-loader
 ### 🔲 [3-11.]()
 
 ***
+
 ## 10 개인 추가 공부
 ## 1 React Hooks에 취한다
 ### 🟥 [1-1. useState 15분만에 마스터하기](https://youtu.be/G3qglTF-fFI?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)  
