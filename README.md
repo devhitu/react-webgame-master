@@ -573,7 +573,7 @@ onSubmitForm() = > {}
 ### 🟫 [3-8. 숫자야구 Hooks로 전환하기(+useState lazy init)](https://youtu.be/HYpapSlFlCc?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=5)
 ```js
   //빼두면 Hooks로 바꿀때 독립적이기때문에 영향을 받지않아
-  function getNumbers() { 
+  function getNumbrs() { 
     /*...(생략)*/
   }
 const NumberBaseball = () => {
@@ -594,9 +594,35 @@ const NumberBaseball = () => {
 - 개발모드일 경우 상단 버튼이 빨갛게 뜸
 - devTools로 보면 컴포넌트가 표시됨
 - 변화가 보이기때문에 최적화된 코드를 짤 수 있음
-### ⬜ [3-10. ]()
-### 🔳 [3-11.]()
-### 🔲 [3-12.]()
+### ⬜ [3-10. shouldComponentUpdate](https://youtu.be/dFbdTkgaLNs?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- React Devtools를 쓰면 state나 props가 바뀌었을때(=렌더될때) highlight기능이 반짝거림
+- 렌더가 많이 일어나면 highlight가 붉은색
+- 렌더가 안일어나도 되는곳이 렌더되면 성능에 문제가 발생하기 시작함😫
+```js
+setState가 ㄱㅖ속 호출될때...
+리액트는 ㅂr보라서 바뀌는 걸 알려줘야함....✨
+
+shouldComponentUpdate(nextProps, nextState, nextContext){
+  if(this.state.counter !== nextState.counter){
+    return true
+  }
+  return false
+}
+```
+### 🔳 [3-11. 억울한 자식 리렌더링 막기(PureComponent와 memo)](https://youtu.be/MHYbt8v1X3U?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1)
+1. PureComponent 
+  (1) shouldComponentUpdate가 복잡하면 PureComponent로 바꾼다  
+  (2) PureComponent는 shouldComponentUpdate의 T/F를 알아서 판단함✨  
+  (3) BUT. 복잡한 구조일경우 판단이 어려움😫  
+  (4) PureComponent가 잘 알아차릴 수 있게 간결하게 작성  
+  (5) 레퍼런스 주소만을 비교하여 비교(얕은비교, 바로 state 수정 불가❌)
+
+2. 미래에서 온 제로초 - memo  
+  (1) "함수형 컴포넌트"에서 PureComponent의 기능과 같이 수행.  
+
+* [참고페이지](https://velog.io/@kihyeon8949/React-PureComponent-memo-React-%EC%84%B1%EB%8A%A5%EA%B0%9C%EC%84%A0)
+### 🔲 [3-12. React.createRef](https://youtu.be/qE02-oSDPlg?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 
 ### 🟥 [3-13.]()
 ***
 ## 4
