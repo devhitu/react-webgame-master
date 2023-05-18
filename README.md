@@ -6,7 +6,7 @@
 [1 React Class](#1-React-Class)  
 [2 Hooks 및 웹팩설치](#2-Hooks-및-웹팩설치)  
 [3 React에서 사용하는 함수와 숫자야구](#3-React에서-사용하는-함수와-숫자야구)  
-[4 ](#4-)  
+[4 반응속도와 성능체크](#4-반응속도와-성능체크)  
 [5 ](#5-)  
 [6 ](#6-)  
 [7 ](#7-)  
@@ -622,21 +622,149 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 
 * [참고페이지](https://velog.io/@kihyeon8949/React-PureComponent-memo-React-%EC%84%B1%EB%8A%A5%EA%B0%9C%EC%84%A0)
 ### 🔲 [3-12. React.createRef](https://youtu.be/qE02-oSDPlg?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
-- 
-### 🟥 [3-13.]()
+```js
+1. class의 ref를 hooks의 ref처럼 만들기
+
+inputRef = createRef;를 넣어서
+this.current.inputRef;로 씀
+
+=> 통일성을 줌 👍🏼
+```
+### 🟥 [3-13. props와 state 연결하기](https://youtu.be/siiFLSey834?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- reder안에 this.setState실행하면 무한반복....절대 쓰지마❌
+
+```js
+1. props  
+  
+  (1) props는 자식(Try.jsx)이 직접 값을 바꾸면 안됨, 부모(``<Try/>``)가 바꿔야함 
+
+  (2) 근데 바꿔야한다? 그럼 자식 파일에서 state로 바꾼다...  
+  state = {
+    result: this.props.result,
+    try: this.props.try,
+  }
+  render(){
+    const { tryInfo } = this.props;
+    return(
+      ...
+    )
+  }
+
+2. constructor
+  (1) 정밀한 동작이 필요할때...
+
+3. A -> B -> C -> D ...
+  (1) 받아오려면 쓸데없이 렌더될수있음
+  (2) A에서D를 바로 전달해주는거 => 리덕스, 컨텍스트(?)
+```
 ***
-## 4
-### 🟥 [4-1.]()
-### 🟧 [4-2. ]()
-### 🟨 [4-3. ]()
-### 🟩 [4-4. ]()
-### 🟦 [4-5. ]()
+## 4 반응속도와 성능체크
+### 🟥 [4-1. React 조건문](https://youtu.be/RPz-JKCfnIs?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 반응속도 체크
+- 초록색이되면 클릭하는 게임💚
+- 리액트에서 조건문 : 삼항연산자(보이고 안보이고 할때) 지저분하긴함..
+### 🟧 [4-2. setTimeout 넣어 반응속도체크](https://youtu.be/9bo3fG7brCs?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+
+```js
+  //렌더링을 일으키고 싶지 않은 애들
+  timeout; //setTimeout 초기화 시켜줘야함.=> clearTimeout
+  startTime; 
+  endTime; 
+
+  onClickScreen = () => {
+    const { state } = this.state;
+    if (state === 'waiting') {
+      timeout.current = setTimeout(() => {
+        this.setState({
+          state: 'now',
+          message: '지금 클릭',
+        });
+        this.startTime = new Date();
+      }, Math.floor(Math.random() * 1000) + 2000); // 랜덤
+      this.setState({
+        state: 'ready',
+        message: '초록색이 되면 클릭하세요.',
+      });
+    } else if (state === 'ready') { // 성급하게 클릭
+      clearTimeout(this.timeout); 
+      this.setState({
+        state: 'waiting',
+        message: '너무 성급하시군요! 초록색이 된 후에 클릭하세요.',
+      });
+    } else if (state === 'now') { // 반응속도 체크
+      endTime.current = new Date();
+      this.setState((prevState) => {
+        return {
+          state: 'waiting',
+          message: '클릭해서 시작하세요.',
+          result: [...prevState.result, this.endTime - this.startTime], // 시간차
+        };
+      });
+    }
+  };
+```
+### 🟨 [4-3. 성능 체크와 Q&A](https://youtu.be/mw3HN6QOn3U?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- reset버튼 만들기
+```js
+  onReset = () => {
+    this.setState({
+      result: [],
+    });
+  };
+
+  renderAverage = () => {
+    const {result} = this.state;
+    return result.length === 0
+      ? null //아무것두 없서..
+      : <>
+        <div>평균 시간: {result.reduce((a, c) => a + c) / result.length}ms</div>
+        <button onClick={this.onReset}>리셋</button>
+      </>
+  };
+```
+- 리셋시 불필요한 렌더링이 일어남  
+  => result가 바뀌는거랑 ``renderAverage`` 가 계산되는게 합쳐있는데, 이걸 분리해야함(최적화)
+```js
+  render() {
+    const { state, message } = this.state;
+    return (
+      <>
+        <div
+          id="screen"
+          className={state}
+          onClick={this.onClickScreen}
+        >
+          {message}
+        </div>
+        {this.renderAverage()}
+      </>
+    )
+  }
+```
+### 🟩 [4-4. 반응속도체크 Hooks로 전환하기](https://youtu.be/deS_DJzT1no?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+  const timeout = useRef(null);
+  const startTime = useRef(0);
+  const endTime = useRef(0);
+
+  😏 ref는 접근시 current로 접근하는것! 실수하지말것~
+```
+  - class에서는 this의 속성들을 적어줬는데 hooks로 표현할때는 ref를 사용  
+  ✨ ref는 DOM에 접근할때, this의 속성들을 표현할때 사용한다.   
+
+  - state와 ref의 차이  
+  1. state는 return이 다시 실행⭕  
+  2. ref는 다시실행되지 않음. 불필요한 렌더링을 막는다.❌  
+  => 화면은 바뀌는데, 값은 안바뀌는것들
+
+### 🟦 [4-5. return 내부에 for과 if 쓰기](https://youtu.be/FX6uO1GkXsc?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+
 ### 🟪 [4-6. ]()
 ### 🟫 [4-7. ]()
 ### ⬛ [4-8. ]()
 ### ⬜ [4-9. ]()
-### 🔳 [4-10.]()
-### 🔲 [4-11.]()
+### 🔳 [4-10. ]()
+### 🔲 [4-11. ]()
 ***
 ## 5
 ### 🟥 [5-1.]()
@@ -648,8 +776,8 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 ### 🟫 [5-7. ]()
 ### ⬛ [5-8. ]()
 ### ⬜ [5-9. ]()
-### 🔳 [5-10.]()
-### 🔲 [5-11.]()
+### 🔳 [5-10. ]()
+### 🔲 [5-11. ]()
 ***
 ## 6
 ### 🟥 [6-1.]()
@@ -661,8 +789,8 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 ### 🟫 [6-7. ]()
 ### ⬛ [6-8. ]()
 ### ⬜ [6-9. ]()
-### 🔳 [6-10.]()
-### 🔲 [6-11.]()
+### 🔳 [6-10. ]()
+### 🔲 [6-11. ]()
 ***
 ## 7
 ### 🟥 [7-1.]()
@@ -674,8 +802,8 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 ### 🟫 [7-7. ]()
 ### ⬛ [7-8. ]()
 ### ⬜ [7-9. ]()
-### 🔳 [7-10.]()
-### 🔲 [7-11.]()
+### 🔳 [7-10. ]()
+### 🔲 [7-11. ]()
 ***
 ## 8
 ### 🟥 [8-1.]()
@@ -687,8 +815,8 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 ### 🟫 [8-7. ]()
 ### ⬛ [8-8. ]()
 ### ⬜ [8-9. ]()
-### 🔳 [8-10.]()
-### 🔲 [8-11.]()
+### 🔳 [8-10. ]()
+### 🔲 [8-11. ]()
 ***
 ## 9
 ### 🟥 [9-1.]()
@@ -700,8 +828,8 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 ### 🟫 [9-7. ]()
 ### ⬛ [9-8. ]()
 ### ⬜ [9-9. ]()
-### 🔳 [9-10.]()
-### 🔲 [9-11.]()
+### 🔳 [9-10. ]()
+### 🔲 [9-11. ]()
 ***
 
 ## 10 개인 추가 공부
