@@ -7,7 +7,7 @@
 [2 Hooks 및 웹팩설치](#2-Hooks-및-웹팩설치)  
 [3 React에서 사용하는 함수와 숫자야구](#3-React에서-사용하는-함수와-숫자야구)  
 [4 반응속도와 성능체크](#4-반응속도와-성능체크)  
-[5 ](#5-)  
+[5 라이프사이클과 가위바위보 게임](#5-라이프사이클과-가위바위보-게임)  
 [6 ](#6-)  
 [7 ](#7-)  
 [8 ](#8-)  
@@ -758,78 +758,151 @@ this.current.inputRef;로 씀
   => 화면은 바뀌는데, 값은 안바뀌는것들
 
 ### 🟦 [4-5. return 내부에 for과 if 쓰기](https://youtu.be/FX6uO1GkXsc?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+1. if문 
+{(()=>{ //즉시실행함수
+  if(...){
+    ...
+  }else{
+    ...
+  }
+})()}
 
-### 🟪 [4-6. ]()
-### 🟫 [4-7. ]()
-### ⬛ [4-8. ]()
-### ⬜ [4-9. ]()
-### 🔳 [4-10. ]()
-### 🔲 [4-11. ]()
+
+2. for문 
+{(()=>{ //즉시실행함수
+  for(...){
+    ...
+  }
+})()}
+```
+- for과 if 사용하면 코드가 지저분해짐
+- 이걸 하느니 바깥으로 함수를 빼서 인라인으로 쓰는게 깔끔함
+- 제일 좋은건 자식컴포넌트로 만드는것
+
+```js
+return [
+  <div key="사과">사과</div>
+]
+```
+- jsx에서 [] 배열을 받아오는경우
+- key를 적어줘야함
+- 잘 안씀
 ***
-## 5
-### 🟥 [5-1.]()
-### 🟧 [5-2. ]()
-### 🟨 [5-3. ]()
-### 🟩 [5-4. ]()
-### 🟦 [5-5. ]()
-### 🟪 [5-6. ]()
-### 🟫 [5-7. ]()
-### ⬛ [5-8. ]()
-### ⬜ [5-9. ]()
-### 🔳 [5-10. ]()
-### 🔲 [5-11. ]()
+## 5 라이프사이클과 가위바위보 게임
+### 🟥 [5-1. 리액트 라이프사이클 소개](https://youtu.be/ltw4FYagLfM?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+componentDidMount(){
+  //컴포넌트 처음으로 실행  
+}
+componentWillUnMount(){
+  //컴포넌트 제거되기 직전
+}
+componentDidUpdate(){
+  //컴포넌트 리렌더링
+}
+shouldComponentUpdate(){
+  return true //렌더링 할지 판단
+}
+```
+### 🟧 [5-2. setInterval과 라이프사이클 연동하기](https://youtu.be/5aFCwolam4k?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=7)
+- 비동기 요청
+```js
+interval;
+
+componentDidMount(){
+  this.interval.setInterval(()=>{
+    //리액트는 ㅂr보라서 화면에 사라져도 계속 됨
+    //메모리 먹음...🍔
+  })  
+}
+
+componentWillUnMount(){
+  clearInterval(this.interval); //취소해줘야함
+}
+
+
+✔조심 ‼비동기함수가 바깥에 있는 변수를 참조하면 클로저 발생!‼
+```
+### 🟨 [5-3. 가위바위보 게임 만들기](https://youtu.be/F8eqh1Y4n3k?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+  interval;
+
+  componentDidMount() { 
+    this.interval = setInterval(this.changeHand, 100);
+  }
+
+  changeHand = () => {
+    const {imgCoord} = this.state;
+    if (imgCoord === rspCoords.바위) {
+      this.setState({
+        imgCoord: rspCoords.가위,
+      });
+    } else if (imgCoord === rspCoords.가위) {
+      this.setState({
+        imgCoord: rspCoords.보,
+      });
+    } else if (imgCoord === rspCoords.보) {
+      this.setState({
+        imgCoord: rspCoords.바위,
+      });
+    }
+  };
+```
+- clearInterval로 멈춘 걸 다시 복구하기
+- 그럼 코드가 중복되기 때문에 밖으로 뺀다
+### 🟩 [5-4. 고차 함수와 Q&A](https://youtu.be/BdKBcRJInP4?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+✔ 매서드안에 함수를 호출하는 경우  
+<button id="rock" className="btn" onClick={() = >this.onClickBtn('바위')}>바위</button>
+
+1. ()=> 화살표를 지운다.
+<button id="rock" className="btn" onClick={() = >this.onClickBtn('바위')}>바위</button>
+
+2. ✨여기에 화살표를 넣어줌!
+onClickBtn = (choice) => () => {
+  ...
+};
+```
+### 🟦 [5-5. Hooks와 useEffect](https://youtu.be/2DFXAcck-DQ?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+
+### 🟪 [5-6. 클래스와 Hooks 라이프사이클 비교]()
+### 🟫 [5-7. 커스텀훅으로 우아하게 interval하기]()
 ***
 ## 6
-### 🟥 [6-1.]()
-### 🟧 [6-2. ]()
-### 🟨 [6-3. ]()
-### 🟩 [6-4. ]()
-### 🟦 [6-5. ]()
-### 🟪 [6-6. ]()
-### 🟫 [6-7. ]()
-### ⬛ [6-8. ]()
-### ⬜ [6-9. ]()
-### 🔳 [6-10. ]()
-### 🔲 [6-11. ]()
+### 🟥 [6-1. 로또 추첨기 컴포넌트]()
+### 🟧 [6-2. setTimeout 여러 번 사용하기]()
+### 🟨 [6-3. componentDidUpdate]()
+### 🟩 [6-4. useEffect로 업데이트 감지하기]()
+### 🟦 [6-5. useMemo와 useCallback]()
+### 🟪 [6-6. Hooks에대한 자잘한 팁들]()
 ***
 ## 7
-### 🟥 [7-1.]()
-### 🟧 [7-2. ]()
-### 🟨 [7-3. ]()
-### 🟩 [7-4. ]()
-### 🟦 [7-5. ]()
-### 🟪 [7-6. ]()
-### 🟫 [7-7. ]()
-### ⬛ [7-8. ]()
-### ⬜ [7-9. ]()
-### 🔳 [7-10. ]()
-### 🔲 [7-11. ]()
+### 🟥 [7-1. 틱택토와 useReducer 소개]()
+### 🟧 [7-2. reducer, action, dispatch의 관계]()
+### 🟨 [7-3. action 만들어 dispatch하기]()
+### 🟩 [7-4. 틱택토 구현하기]()
+### 🟦 [7-5. 테이블 최적화 하기]()
 ***
 ## 8
-### 🟥 [8-1.]()
-### 🟧 [8-2. ]()
-### 🟨 [8-3. ]()
-### 🟩 [8-4. ]()
-### 🟦 [8-5. ]()
-### 🟪 [8-6. ]()
-### 🟫 [8-7. ]()
-### ⬛ [8-8. ]()
-### ⬜ [8-9. ]()
-### 🔳 [8-10. ]()
-### 🔲 [8-11. ]()
+### 🟥 [8-1. Context API 소개와 지뢰찾기]()
+### 🟧 [8-2. createContext와 Provider]()
+### 🟨 [8-3. useContext 사용해 지뢰 칸 렌]()
+### 🟩 [8-4. 왼쪽 오른쪽 클릭 로직 작성하기]()
+### 🟦 [8-5. 지뢰 개수 표시하기]()
+### 🟪 [8-6. 빈 칸들 한번에 열기]()
+### 🟫 [8-7. 승리 조건 체크와 타이머]()
+### ⬛ [8-8. Context API 최적화]()
 ***
 ## 9
-### 🟥 [9-1.]()
-### 🟧 [9-2. ]()
-### 🟨 [9-3. ]()
-### 🟩 [9-4. ]()
-### 🟦 [9-5. ]()
-### 🟪 [9-6. ]()
-### 🟫 [9-7. ]()
-### ⬛ [9-8. ]()
-### ⬜ [9-9. ]()
-### 🔳 [9-10. ]()
-### 🔲 [9-11. ]()
+### 🟥 [9-1. React Router 도입하기]()
+### 🟧 [9-2. Link와 브라우저라우터(BrowserRouter)]()
+### 🟨 [9-3. 해시라우터, params, withRouter]()
+### 🟩 [9-4. location, match, history]()
+### 🟦 [9-5. 쿼리스티링과 URL SearchParams]()
+### 🟪 [9-6. render props, swith, exact]()
+### 🟫 [리액트 라우터6(feat.REMIX)+라이브러리 버전 업그레이드]()
+### ⬛ [언젠가는 써먹을 useLayoutEffect]()
 ***
 
 ## 10 개인 추가 공부
