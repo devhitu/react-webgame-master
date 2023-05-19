@@ -793,7 +793,6 @@ return [
 ### 🟥 [5-1. 리액트 라이프사이클 소개](https://youtu.be/ltw4FYagLfM?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
 ```js
 componentDidMount(){
-  //컴포넌트 처음으로 실행  
 }
 componentWillUnMount(){
   //컴포넌트 제거되기 직전
@@ -833,20 +832,7 @@ componentWillUnMount(){
   }
 
   changeHand = () => {
-    const {imgCoord} = this.state;
-    if (imgCoord === rspCoords.바위) {
-      this.setState({
-        imgCoord: rspCoords.가위,
-      });
-    } else if (imgCoord === rspCoords.가위) {
-      this.setState({
-        imgCoord: rspCoords.보,
-      });
-    } else if (imgCoord === rspCoords.보) {
-      this.setState({
-        imgCoord: rspCoords.바위,
-      });
-    }
+    ...
   };
 ```
 - clearInterval로 멈춘 걸 다시 복구하기
@@ -857,7 +843,7 @@ componentWillUnMount(){
 <button id="rock" className="btn" onClick={() = >this.onClickBtn('바위')}>바위</button>
 
 1. ()=> 화살표를 지운다.
-<button id="rock" className="btn" onClick={() = >this.onClickBtn('바위')}>바위</button>
+<button id="rock" className="btn" onClick={this.onClickBtn('바위')}>바위</button>
 
 2. ✨여기에 화살표를 넣어줌!
 onClickBtn = (choice) => () => {
@@ -865,9 +851,58 @@ onClickBtn = (choice) => () => {
 };
 ```
 ### 🟦 [5-5. Hooks와 useEffect](https://youtu.be/2DFXAcck-DQ?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+✔ ✨ componentDidMount, componentDidUpdate 역할
+- 1대1 대응은 아님, BUT 비슷한 역할
 
-### 🟪 [5-6. 클래스와 Hooks 라이프사이클 비교]()
-### 🟫 [5-7. 커스텀훅으로 우아하게 interval하기]()
+  useEffect(() => { 
+    interval.current = setInterval(changeHand, 100); 
+    return () => { // componentWillUnmount 역할
+      clearInterval(interval.current);
+    }
+  }, [imgCoord]); //의존성배열 = 함수 시작 기준
+```
+
+### 🟫 [5-6. 클래스와 Hooks 라이프사이클 비교](https://youtu.be/aUXwUqgYREI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- useLayoutEffect : 화면 늘렸다 줄였다 할때(바뀔 때) 사용  
+  잘 사용하진않음
+- useEffect : 화면이 바뀌고 난 후 실행
+
+```js
+                      | result, imgCoord, score
+-----------------------------------------------
+componentDidMount     |
+componentDidUpdate    |
+componentWillUnmount  |
+
+//한번에
+componentDidMount() {
+  this.setState({
+    imgCoord: 3,
+    score: 1,
+    result: 2,
+  })
+}
+
+//두번써서
+useEffect(() => {
+  setImgCoord();
+  setScore();
+}, [imgCoord, score]);
+
+useEffect(() => {
+  setResult();
+}, [result]);
+
+👀 class는 가로로 볼 것(모두 담당)
+👀 Hooks는 세로로 볼 것(하나만 담당, 물론 useEffect도 다 담당할수있지만 class와 차이점임)
+```
+### 🟪 [5-7. 커스텀훅으로 우아하게 interval하기](https://youtu.be/gtDT26Htn44?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 기존의 ref, useEffect, setInterval, clearInterval를 가독성있게 변경 ?  
+  => customHook : 직접 훅을 만드는것, 재사용성 good  
+  => devTools에서 확인 가능
+- setInterval, clearInterval사용시 callback을 받으면 딜레이가 됨, 지양❌
+- ref(= 항상최신객체 참조)를 사용해 최신 callback을 받아옴 지향⭕
 ***
 ## 6
 ### 🟥 [6-1. 로또 추첨기 컴포넌트]()
@@ -942,7 +977,6 @@ useEffect(function persistForm(){
 });
 
 
-1. }) 일 경우, 공란인 경우 => 렌더링될때마다 실행
 1. }[]) 일 경우, = 의존성배열이 없는 경우 => 초기에만 렌더링
 1. }[aa]) 일 경우, = 의존성배열이 있는 경우 => 배열이 실행될때만 렌더링
 ```
