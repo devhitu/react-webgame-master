@@ -1042,6 +1042,36 @@ const Lotto = () => {
   ㄴ 1-> 2 -> 3 이었던게 중간에 false조건이 되어 1->3이 되면 순서가 달라져서 안됨 
 - 다른 Hooks안에 넣지마라
 - 반복문안에는 넣어줘도 됨(단, 순서가 확실히 정해진 Hooks일 경우)
+```js
+1. componentDidMount에서 ajax호출하는 방법(componentDidUpdate에선 안하고싶어!😫)
+useEffect(()=>{
+  //ajax
+},[]); //[] 빈배열이면 초기에만 실행 ㅇㅇ
+
+
+2. componentDidUpdate에서 ajax호출하는 방법(componentDidMount에선 안하고싶어!😫)
+//https://youtu.be/IuAcxCce_bY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=670
+const mounted = useRef(false);
+useEffect(()=>{
+  if(!mounted.current){
+    mounted.current = true;
+  }else{
+    //ajax
+  }
+}[]) 
+
+=> 1대1 대응은 어려워도 조건을 통해 구현할수있음
+```
+```
+😎베플😎 [Moon | 2년 전(수정됨)]  
+
+즉 hooks라는 것의 태생적 한계는, 클래스가 아닌데도 클래스처럼 동작을 해야하고,  
+렌더를 할 때마다 매번 컴포넌트에 해당하는 함수 부분이 새로 선언 및 실행된다는 것인데, 
+안의 메서드와 멤버 변수에 해당하는 것들이 재생성되는 것을 막기 위해   
+useEffect, useMemo, useCallback 등을 사용해서 일종의 조건문을 만들어주어 
+그것을 회피하는 것이군요...
+```
+
 ***
 ## 7 틱택토와 reducer
 ### 🟥 [7-1. 틱택토와 useReducer 소개]()
