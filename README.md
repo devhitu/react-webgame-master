@@ -610,8 +610,8 @@ shouldComponentUpdate(nextProps, nextState, nextContext){
 }
 ```
 ### 🔳 [3-11. 억울한 자식 리렌더링 막기(PureComponent와 memo)](https://youtu.be/MHYbt8v1X3U?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1)
-1. PureComponent 
-  (1) shouldComponentUpdate가 복잡하면 PureComponent로 바꾼다  
+1. PureComponent  
+  (1) shouldComponentUpdate가 복잡하면 PureComponent로 바꾼다   
   (2) PureComponent는 shouldComponentUpdate의 T/F를 알아서 판단함✨  
   (3) BUT. 복잡한 구조일경우 판단이 어려움😫  
   (4) PureComponent가 잘 알아차릴 수 있게 간결하게 작성  
