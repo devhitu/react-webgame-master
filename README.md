@@ -8,10 +8,10 @@
 [3 React에서 사용하는 함수와 숫자야구](#3-React에서-사용하는-함수와-숫자야구)  
 [4 반응속도와 성능체크](#4-반응속도와-성능체크)  
 [5 라이프사이클과 가위바위보 게임](#5-라이프사이클과-가위바위보-게임)  
-[6 ](#6-)  
-[7 ](#7-)  
-[8 ](#8-)  
-[9 ](#9-)  
+[6 로또 추첨기와 Hooks 활용](#6-로또-추첨기와-Hooks-활용)  
+[7 틱택토와 reducer](#7-틱택토와-reducer)  
+[8 Context API](#8-Context-API)  
+[9 Router와 useLayoutEffect](#9-Router와-useLayoutEffect)  
 [10 개인 추가 공부](#10-개인-추가-공부)  
 * * *
 
@@ -904,22 +904,153 @@ useEffect(() => {
 - setInterval, clearInterval사용시 callback을 받으면 딜레이가 됨, 지양❌
 - ref(= 항상최신객체 참조)를 사용해 최신 callback을 받아옴 지향⭕
 ***
-## 6
-### 🟥 [6-1. 로또 추첨기 컴포넌트]()
-### 🟧 [6-2. setTimeout 여러 번 사용하기]()
-### 🟨 [6-3. componentDidUpdate]()
-### 🟩 [6-4. useEffect로 업데이트 감지하기]()
-### 🟦 [6-5. useMemo와 useCallback]()
-### 🟪 [6-6. Hooks에대한 자잘한 팁들]()
+## 6 로또 추첨기와 Hooks 활용
+### 🟥 [6-1. 로또 추첨기 컴포넌트](https://youtu.be/oKPtGBEtR3k?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 로또 당첨숫자 7개를 미리 뽑는것,  
+   대부분의 게임들이 미리 수를 뽑아놓아 준비를 해놓고 실행
+```js
+✔ 로또 1번 실행후 재실행하는 state => "한번더 해볼래?" 버튼
+class Lotto extends Component { ... redo : false ...}
+
+-----------------------------------------------------------------------
+✔ 반복문을 기점으로 컴포넌트 분리, 
+반복문이 props로 값을 전달하는 좋은 기점이 되기때문
+
+<div id="결과창">
+    {winBalls.map((v) => <Ball key={v} number={v} />)}
+</div>
+
+
+-----------------------------------------------------------------------
+✔ 해당코드는 Hooks가 아님! 
+✔ state를 쓰지 않는 애들은 그냥 함수컴포넌트로 실행
+✔ 자식컴포넌트에는 memo를 넣어줘야 불필요한 렌더링을 막을수있음
+
+const Ball = memo(({ number }) => {
+  let background;
+  if (number <= 10) {
+    background = 'red'; 
+  ...
+  } else {
+    background = 'green';
+  }
+  return (
+    <div className="ball" style={{ background }}>{number}</div>
+  )
+});
+
+export default Ball;
+-----------------------------------------------------------------------
+
+👀 단, pureComponent 사용하고싶다면
+memo로 감싸주기 => 이를 '하이 오더 컴포넌트(고차컴포넌트, HOC)'라고함
+
+import React, {memo} from 'react';
+const Ball =  memo({number}) => { ... }
+```
+### 🟧 [6-2. setTimeout 여러 번 사용하기](https://youtu.be/fWYFW6shsrs?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+```js
+componentDidMount() { // 시작하자 마자 생성
+  1. 비동기에 변수쓰면 클로저 문제 발생하나, ✨let을 사용하면 해결할수있음.(es6)
+  2. 공 6개 순서대로 1초마다 넣어주기 (보너스 공은 6개 후 출력)
+
+  this.runTimeouts(); 
+}
+
+componentWillUnmount() { //종료
+  1. clear안해주면 메모리 상에서 계속 실행되기때문에 this.state에서 에러가 남😫
+    => 브라우저가 껐다 생각하지 말구 부모컴포넌트가 날 없앴다라고 생각
+  2. setTimeout, setInterval은 항상! componentWillInmount✨에서 관리해줘야함
+  3. componentWilReceiceProps,componentDidcatch등등은 사용❌ 사라질꼬야.. 
+
+  this.timeouts.forEach((v) => {
+    clearTimeout(v); 
+  });
+}
+```
+### 🟨 [6-3. componentDidUpdate](https://youtu.be/D2OWLw3KZRQ?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn) 
+```js
+componentDidUpdate(prevProps, prevState) { // update시 실행 
+
+  //👀 redo를 눌렀을때만 동작하도록 ! 
+  if (this.state.winBalls.length === 0) {     
+    this.runTimeouts(); //함수 중복되는경우는 바깥으로 빼기
+  }
+}
+
+onClickRedo = () => {
+  //처음 state로 초기화 하기
+  this.setState({
+    winNumbers: getWinNumbers(), // 당첨 숫자들
+    winBalls: [],
+    bonus: null, // 보너스 공
+    redo: false,
+  });
+  this.timeouts = [];
+};
+
+```
+### 🟩 [6-4. useEffect로 업데이트 감지하기](https://youtu.be/qdaZaC0AWq0?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1) ~ [6-5. useMemo와 useCallback](https://youtu.be/6H6KncvVc8s?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- Hooks로 바꿔보기
+```js
+
+const Lotto = () => {
+  ❌const [winNumbers, setWinNumbers] = useState(getWinNumbers()); 
+  => getWinNumbers가 계속 실행
+
+  - ✨useMemo ?
+  1. 로또숫자를 잠깐 기억할수있게 useMemo(함수실행한 결과값 저장)를 사용함
+  2. 두번째 인자[]가 바뀌진않는한 다시 실행되진 않음
+  const lottoNumbers = useMemo(() => getWinNumbers(), []);
+
+  ✔ 리액트가 기억한 ✨lottoNumbers를 넣어줌
+  const [winNumbers, setWinNumbers] = useState(lottoNumbers);
+  ...
+
+----------------------------------------------------------------------
+
+  useEffect(() => {
+    ...
+  }, [timeouts.current]); 
+
+  1. winBalls.length === 0이면 초기 렌더되고 실행되어서 2번 실행되기때문에 수정
+  2. 빈 배열이면 componentDidMount와 동일
+  3. 배열에 요소가 있으면 componentDidMount랑 componentDidUpdate 둘 다 수행
+  4. 필수로 적용해야하는 경우
+    => 자식컴포넌트에 props로 함수를 넘길때는 꼭‼ useCallback을 사용해야함😎
+    => 부모가 새로 함수를 주네?👨🏼‍🦳 하고 매번 리렌더할수있음...그래서 꼭 기억하게 해야함
+----------------------------------------------------------------------
+  const onClickRedo = useCallback(() => {
+    console.log('onClickRedo');
+    console.log(winNumbers);
+    setWinNumbers(getWinNumbers());
+    setWinBalls([]);
+    setBonus(null);
+    setRedo(false);
+    timeouts.current = [];
+  }, [winNumbers]);
+  
+  - ✨useCallback ?
+  1. 함수컴포넌트가 재실행되어도 onClickRedo는 재실행되지 않아!
+  2. 함수자체의 비용이 클 경우 사용
+  3. 모든 것에 ✨useCallback사용하는게 좋을까? => NO!
+    => 값을 기억📃하기 때문에 업뎃할때 [의존성배열]에 바뀌는 값을 꼭 넣어줘야함👀
+
+```
+### 🟦 [6-6. Hooks에대한 자잘한 팁들](https://youtu.be/IuAcxCce_bY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- Hooks 시리즈는 순서가 중요해서 바뀌면 안된다.(조건문안에 넣지마라)  
+  ㄴ 1-> 2 -> 3 이었던게 중간에 false조건이 되어 1->3이 되면 순서가 달라져서 안됨 
+- 다른 Hooks안에 넣지마라
+- 반복문안에는 넣어줘도 됨(단, 순서가 확실히 정해진 Hooks일 경우)
 ***
-## 7
+## 7 틱택토와 reducer
 ### 🟥 [7-1. 틱택토와 useReducer 소개]()
 ### 🟧 [7-2. reducer, action, dispatch의 관계]()
 ### 🟨 [7-3. action 만들어 dispatch하기]()
 ### 🟩 [7-4. 틱택토 구현하기]()
 ### 🟦 [7-5. 테이블 최적화 하기]()
 ***
-## 8
+## 8 Context API
 ### 🟥 [8-1. Context API 소개와 지뢰찾기]()
 ### 🟧 [8-2. createContext와 Provider]()
 ### 🟨 [8-3. useContext 사용해 지뢰 칸 렌]()
@@ -929,7 +1060,7 @@ useEffect(() => {
 ### 🟫 [8-7. 승리 조건 체크와 타이머]()
 ### ⬛ [8-8. Context API 최적화]()
 ***
-## 9
+## 9 Router와 useLayoutEffect
 ### 🟥 [9-1. React Router 도입하기]()
 ### 🟧 [9-2. Link와 브라우저라우터(BrowserRouter)]()
 ### 🟨 [9-3. 해시라우터, params, withRouter]()
