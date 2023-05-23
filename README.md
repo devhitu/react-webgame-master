@@ -1074,7 +1074,52 @@ useEffect, useMemo, useCallback 등을 사용해서 일종의 조건문을 만�
 
 ***
 ## 7 틱택토와 reducer
-### 🟥 [7-1. 틱택토와 useReducer 소개]()
+### 🟥 [7-1. 틱택토와 useReducer 소개](https://youtu.be/DrkyjiiR9WI?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 틱택토란? 삼목이라고도 부름. 오목처럼 3줄을 만들면 승리! 
+- useReducer를 배우면 Redux의 reducer의 효과를 기대할 수 있음
+- 그럼 Redux를 대체가능 한걸까? no!❌ 그러나 소규모앱에서 대체는 가능⭕
+```js
+import React from 'react';
+const TicTacToe () => {
+  return(
+
+  )
+}
+export default TicTacToe
+```
+
+- Td 컴포넌트
+```js
+import React from 'react';
+const Td () => {
+  return(
+    <td>{''}</td>
+  )
+}
+export default Td
+```
+- Tr컴포넌트 (row:가로 행)
+```js
+import React from 'react';
+import Td from './Td';
+const Tr () => {
+  return(
+    <Td>{''}</Td>
+  )
+}
+export default Tr
+```
+- Table 컴포넌트
+```js
+import React from 'react';
+import Tr from './Tr';
+const Table () => {
+  return(
+    <Tr>{''}</Tr>
+  )
+}
+export default Table
+```
 ### 🟧 [7-2. reducer, action, dispatch의 관계]()
 ### 🟨 [7-3. action 만들어 dispatch하기]()
 ### 🟩 [7-4. 틱택토 구현하기]()
