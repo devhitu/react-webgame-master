@@ -1078,49 +1078,53 @@ useEffect, useMemo, useCallback 등을 사용해서 일종의 조건문을 만�
 - 틱택토란? 삼목이라고도 부름. 오목처럼 3줄을 만들면 승리! 
 - useReducer를 배우면 Redux의 reducer의 효과를 기대할 수 있음
 - 그럼 Redux를 대체가능 한걸까? no!❌ 그러나 소규모앱에서 대체는 가능⭕
+### 🟧 [7-2. reducer, action, dispatch의 관계](https://youtu.be/ccKoutCkbao?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
 ```js
-import React from 'react';
-const TicTacToe () => {
-  return(
+const initialState = {
+  winner: '',
+  turn: 'O',
+  tableData: [['', '', ''],['', '', ''],['', '', ''],],
+  recentCell: [-1, -1],
+};
+const SET_WINNER = 'SET_WINNER' //상수로 빼두기
 
+//함수
+const reducer = (state, action) => {
+  //이 action이 dispatch 할때마다 reducer실행(어떻게 바꿀지 작성)
+  //종류가 많음으로 switch문의 type으로 구별
+  switch(action.type){
+    case 'SET_WINNER' :  //action의 이름은 대문자로(커뮤니티 규칙)
+      return{
+        ...state, => 새롭게 복사해서 만들어야해⭕
+        winner: action.winner, => 직접 바꾸면 안됨!!❌
+      }
+  }
+};
+
+const TicTacToe = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { tableData, turn, winner, recentCell } = state;
+
+  const onClickTable = useCallback(() => { //테이블 클릭시 winner를 o로 바꾸는
+
+    //dispatch안에 들어가는 action객체를 만들어줌
+    dispatch({ type: SET_WINNER, winner: 'O' }); 
+  }, []); //이 action을 해석해서 state를 바꿔주는 게 필요 => reducer
+
+  
+
+  return (
+    <>
+      <Table onClick={onClickTable} tableData={tableData} dispatch={dispatch} />
+      {winner && <div>{winner}님의 승리</div>}
+    </>
   )
-}
-export default TicTacToe
+};
 ```
 
-- Td 컴포넌트
-```js
-import React from 'react';
-const Td () => {
-  return(
-    <td>{''}</td>
-  )
-}
-export default Td
-```
-- Tr컴포넌트 (row:가로 행)
-```js
-import React from 'react';
-import Td from './Td';
-const Tr () => {
-  return(
-    <Td>{''}</Td>
-  )
-}
-export default Tr
-```
-- Table 컴포넌트
-```js
-import React from 'react';
-import Tr from './Tr';
-const Table () => {
-  return(
-    <Tr>{''}</Tr>
-  )
-}
-export default Table
-```
-### 🟧 [7-2. reducer, action, dispatch의 관계]()
+9분 14초까지 들음!!!
+
+
 ### 🟨 [7-3. action 만들어 dispatch하기]()
 ### 🟩 [7-4. 틱택토 구현하기]()
 ### 🟦 [7-5. 테이블 최적화 하기]()
@@ -1140,7 +1144,7 @@ export default Table
 ### 🟧 [9-2. Link와 브라우저라우터(BrowserRouter)]()
 ### 🟨 [9-3. 해시라우터, params, withRouter]()
 ### 🟩 [9-4. location, match, history]()
-### 🟦 [9-5. 쿼리스티링과 URL SearchParams]()
+### 🟦 [9-5. 쿼리스트링과 URL SearchParams]()
 ### 🟪 [9-6. render props, swith, exact]()
 ### 🟫 [리액트 라우터6(feat.REMIX)+라이브러리 버전 업그레이드]()
 ### ⬛ [언젠가는 써먹을 useLayoutEffect]()
@@ -1149,7 +1153,6 @@ export default Table
 ## 10 개인 추가 공부
 ## 1 React Hooks에 취한다
 ### 🟥 [1-1. useState 15분만에 마스터하기](https://youtu.be/G3qglTF-fFI?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)  
-
 #### Hooks란? 
 - 함수형 컴포넌트를 class형 컴포넌트의 기능을 사용할 수 있도록 해주는 기능
 - 함수형 컴포넌트는 리렌더링 할때 무조건 새롭게 선언, 초기화, 메모리 할당을 함(stateless)
@@ -1170,8 +1173,6 @@ function Forem(){
           변수, 함수                  초기값
 }
 ```
-
-
 ### 🟧 [1-2. useEffect 깔끔하게 마스터하기](https://youtu.be/kyodvzc5GHU?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
 #### useEffect
 - = sideEffect를 수행
@@ -1182,11 +1183,9 @@ useEffect(function persistForm(){
     localStorage.setItem('formData', name);
 });
 
-
 1. }[]) 일 경우, = 의존성배열이 없는 경우 => 초기에만 렌더링
 1. }[aa]) 일 경우, = 의존성배열이 있는 경우 => 배열이 실행될때만 렌더링
 ```
-
 ```js
 useEffect(()=>{
     ...
@@ -1199,19 +1198,15 @@ useEffect(()=>{
 - clean up
 - componetWillUnmount
 ```
-### 🟨 [1-3. useRef 완벽 정리 1# 변수 관리](https://youtu.be/VxqZrL4FLz8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+### 🟨 [1-3. useRef 완벽 정리 1# 변수 관리](https://youtu.be/VxqZrL4FLz8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO) ~ [1-4. useRef 완벽 정리 2# DOM 요소 접근](https://youtu.be/EMK8oUUwP5Q?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
 #### useRef
 1. 저장공간으로 사용
     state의 경우, 렌더링시 내부변수들을 모두 초기화 시킴  
     ref의 경우 변수값을 유지하되, 렌더를 발생시키지 않음(변화는 감지함)
 2. DOM에 접근
     (예) 아이디 작성 input에 사용자가 직접 focus하지 않아도 렌더시 focus()되어있게 하는 예제
-
-```js
-```
-### 🟩 [1-4. useRef 완벽 정리 2# DOM 요소 접근](https://youtu.be/EMK8oUUwP5Q?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-### 🟦 [1-5. useContext + Context API ](https://youtu.be/LwvXVEHS638?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-### 🟪 [1-6. useMemo 제대로 사용하기](https://youtu.be/e-CnI8Q5RY4?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+### 🟩 [1-5. useContext + Context API ](https://youtu.be/LwvXVEHS638?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+### 🟦 [1-6. useMemo 제대로 사용하기](https://youtu.be/e-CnI8Q5RY4?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
 #### useMemo
 - 컴포넌트 최적화🧹
 - 함수의 리턴값을 메모리에 기억하여 값을 재사용한다.
@@ -1221,7 +1216,7 @@ const value = useMemo(()=>{
     return calculate() //useMemo가 리턴해주는 값
 }[item])
 ```
-### 🟫 [1-7. useCallback 짱 쉬운 강의](https://youtu.be/XfUF9qLa3mU?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+### 🟪 [1-7. useCallback 짱 쉬운 강의](https://youtu.be/XfUF9qLa3mU?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
 #### useCallback
 - 컴포넌트 최적화🧹
 - 컴포넌트가 렌더링 될때 특정함수를 재사용해서 재렌더링 방지
@@ -1234,8 +1229,126 @@ const onSave = useCallback(()=>{
 []이 공란인 배열이면 렌더링될때마다 초기값을 0으로 받아오기때문에 
 꼭! 재생성할 기준을 할당해야함
 ```
-### ⬛ [1-8. useReducer 확실히 정리해드려요](https://youtu.be/tdORpiegLg0?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-### ⬜ [1-9. React.memo로 컴포넌트 최적화하기 (ft. useMemo, useCallback)](https://youtu.be/oqUgcxwrnSY?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-### 🔳 [1-10. Custom Hooks 커스텀 훅](https://youtu.be/S6POUU2-tr8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+### 🟫 [1-8. useReducer 확실히 정리해드려요](https://youtu.be/tdORpiegLg0?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+#### useReducer
+- useState처럼 state를 생성하고 관리할수있음
+- 여러개의 '하위값'을 포함하는 복잡한 state를 다뤄야할때 사용
+- 3가지 알아야할 사항
+  1. Reducer : state를 업데이트해줌
+  2. Dispatch : state를 업데이트를 위한 요구
+  3. Action : state를 업데이트를 위한 요구 내용  
+```js
+👦🏼철수가 거래내역(state)을 업데이트하기 위해선,  
+요구(dispatch)의 '만원을 출금해주세요'라는 내용(action)을 넣어서  
+은행(reducer)에 전달, 그러면 은행은 action의 내용대로 state를 업데이트해줌
+
+Dispatch(Action) => Reducer(State, Action)
+                               ↘    ↙
+                              State Update!                   
+```
+1. 철수의 은행 예제
+```js
+import React, { useState, useReducer } from 'react';
+
+📃 깔끔하게 오브젝트로 빼두기
+const ACTION_TYPES = { 
+  deposit: "deposit",
+  withdraw: "withdraw",
+}
+
+const reducer (state, action) => {
+  💬 type에 따라 달라지기때문에 if문이나 switch문을 자주 사용함
+  ✨ 전달받은 Action만 업데이트해주기때문에 좋음!!
+
+  switch(action.type){
+    case: ACTION_TYPES.deposit :
+      return state + action.payload; //새로 업뎃되는 값
+    case: ACTION_TYPES.withdraw :
+      return state - action.payload;
+    default:
+      return: state;//이전 state
+  }
+}
+fuction App(){
+  const [number, setNumber] = useState(0);
+  const [money, dispatch] = useReducer(reducer, 0);
+  ✔ money state는 App함수 바깥에 있는 reducer함수를 통해서만 업데이트가 된다
+}
+return(
+  <>
+  <p>잔고:{money}</p> //초기값 0출력
+  <input type="number" value={number} onChange={(e)=>setNumber(parseInt(e.target.value))} step="1000"/>
+  <button onClick={()=>{dispatch({type:ACTION_TYPES.deposit, payload: number});}}>예금</button>
+  <button onClick={()=>{dispatch({type:ACTION_TYPES.withdraw, payload: number});}}>출금</button>
+  </>
+)
+
+export default App;
+```
+2. 출석부 예제
+```js
+const reducer (state, action) => {
+  switch(action.type){
+    case:'add-student':
+    const name = action.payload.name;
+    const newStudent = {
+      id: Date.now(),
+      name, //같으므로 생략
+      isHere: false,
+    }
+    return{
+      count: state.count + 1,
+      students: [...state.students, newStudent],
+    };
+    case: 'delete-student'
+    default: 
+      return state;
+  }
+}
+const initialState ={
+  count: 0,//초기값 0출력
+  students:[
+    // {
+    //   id: Date.Now(),
+    //   name: 'Hitu',
+    //   isHere: false
+    // }
+  ]
+}
+fuction App(){
+  const [name, setNmae] = useState('');
+  const [studentsInfo, dispatch] = useReducer(reducer, initialState);
+}
+return(
+  <>
+  <p>총학생수:{studentsInfo.count}</p> 
+  <input type="text" value={name} onChange={(e)=>setNmae(e.target.value)}/>
+  <button 
+    onClick={(=>{dispatch(type:'add-student', payload:{name})})}>
+    추가</button>
+
+  {studentsInfo.students.map(student => {
+    return <Student key={student.id} name={student.name} dispatch={dispatch} id="student.id">
+  })}
+  </>
+)
+```
+```js
+//Student.Js
+const Student = ({name, dispatch, id}) => {
+  return(
+    <div>
+      <span>{name}</span>
+      <button>삭제</button>
+    </div>
+  )
+}
+```
+20분 18초까지 들음
+처음부터 다시 재생해볼것!!
 
 
+### ⬛ [1-9. React.memo로 컴포넌트 최적화하기 (ft. useMemo, useCallback)](https://youtu.be/oqUgcxwrnSY?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+### ⬜ [1-10. Custom Hooks 커스텀 훅](https://youtu.be/S6POUU2-tr8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
+---
+🟥🟧🟨🟩🟦🟪🟫⬛
