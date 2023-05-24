@@ -1083,7 +1083,7 @@ useEffect, useMemo, useCallback 등을 사용해서 일종의 조건문을 만�
 const initialState = {
   winner: '',
   turn: 'O',
-  tableData: [['', '', ''],['', '', ''],['', '', ''],],
+  tableData: [['', '', ''],['', '', ''],['', '', ''],], //row data
   recentCell: [-1, -1],
 };
 const SET_WINNER = 'SET_WINNER' //상수로 빼두기
@@ -1110,22 +1110,33 @@ const TicTacToe = () => {
     //dispatch안에 들어가는 action객체를 만들어줌
     dispatch({ type: SET_WINNER, winner: 'O' }); 
   }, []); //이 action을 해석해서 state를 바꿔주는 게 필요 => reducer
-
-  
-
-  return (
-    <>
-      <Table onClick={onClickTable} tableData={tableData} dispatch={dispatch} />
-      {winner && <div>{winner}님의 승리</div>}
-    </>
-  )
 };
 ```
+### 🟨 [7-3. action 만들어 dispatch하기](https://youtu.be/f9awvzAxkpw?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- [틱택토 정리한 블로그 참고](https://kth990303.tistory.com/221)
+- 각 셀 컴포넌트를 클릭했을때 **몇번째 줄 몇번째 칸**인지 알아내야함👀
+- Tr.jsx
+```js
+import React, { memo } from 'react';
+import Td from './Td';
 
-9분 14초까지 들음!!!
+const Tr = memo(({ rowData, rowIndex, dispatch }) => {
+  console.log('tr rendered');
+  return (
+    <tr>
+      ✔ i는 몇번째줄인지 나타냄
+
+      {Array(rowData.length).fill().map((td, i) => (
+        <Td key={i} dispatch={dispatch} rowIndex={rowIndex} cellIndex={i} cellData={rowData[i]}>{''}</Td>
+      ))}
+    </tr>
+  );
+});
+
+export default Tr;
 
 
-### 🟨 [7-3. action 만들어 dispatch하기]()
+```
 ### 🟩 [7-4. 틱택토 구현하기]()
 ### 🟦 [7-5. 테이블 최적화 하기]()
 ***
@@ -1287,6 +1298,8 @@ export default App;
 ```
 2. 출석부 예제
 ```js
+const ACTION_TYPE = {...} //이렇게 타입을 정리할수도 있음
+
 const reducer (state, action) => {
   switch(action.type){
     case:'add-student':
@@ -1301,6 +1314,22 @@ const reducer (state, action) => {
       students: [...state.students, newStudent],
     };
     case: 'delete-student'
+      return{
+        count: state.count - 1,
+        students: state.students.filter(
+          student => student.id != action.payload.id
+        ),
+      };
+    case: 'mark-student':
+      return{
+        count: state.count.
+        students: state.students.map(student =>{
+          if(student.id === action.payload.id){
+            return{...student, isHere: !student.isHere}
+          }
+          return student;
+        })
+      }
     default: 
       return state;
   }
@@ -1328,26 +1357,36 @@ return(
     추가</button>
 
   {studentsInfo.students.map(student => {
-    return <Student key={student.id} name={student.name} dispatch={dispatch} id="student.id">
+    return 
+    <Student 
+    key={student.id} 
+    name={student.name} 
+    dispatch={dispatch} 
+    id={student.id}
+    isHere={student.isHere}>
   })}
   </>
 )
 ```
 ```js
 //Student.Js
-const Student = ({name, dispatch, id}) => {
+const Student = ({name, dispatch, id, isHere}) => {
   return(
     <div>
-      <span>{name}</span>
-      <button>삭제</button>
+      <span style={(
+        textDecoration : isHere ? "line-through": "none",
+        color:  isHere ? "gray": "black",
+      )}
+      onClick={()=>{
+        dispatch({type: 'mark-student', payload:{ id }})
+      }}
+      >{name}</span>
+      <button
+      onClick={(=>{dispatch(type:'delete-student', payload:{ id })})}>삭제</button>
     </div>
   )
 }
 ```
-20분 18초까지 들음
-처음부터 다시 재생해볼것!!
-
-
 ### ⬛ [1-9. React.memo로 컴포넌트 최적화하기 (ft. useMemo, useCallback)](https://youtu.be/oqUgcxwrnSY?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
 ### ⬜ [1-10. Custom Hooks 커스텀 훅](https://youtu.be/S6POUU2-tr8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
 ---
