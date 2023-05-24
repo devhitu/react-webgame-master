@@ -1114,30 +1114,78 @@ const TicTacToe = () => {
 ```
 ### 🟨 [7-3. action 만들어 dispatch하기](https://youtu.be/f9awvzAxkpw?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
 - [틱택토 정리한 블로그 참고](https://kth990303.tistory.com/221)
-- 각 셀 컴포넌트를 클릭했을때 **몇번째 줄 몇번째 칸**인지 알아내야함👀
-- Tr.jsx
+- 각 셀 컴포넌트를 클릭했을때 **몇번째 줄 몇번째 칸**인지 알아내야함👀  
+``console.log(rowIndex, cellIndex)``
+- 얕은 복사를 빈번히 사용하는데, 가독성문제가 발생 => immer라는 라이브러리로 해결
 ```js
-import React, { memo } from 'react';
-import Td from './Td';
+const obj = { a: 1, b: 2 };
+const obj2 = obj;
+obj2.a = 3;
+obj.a //=> 3
+❌위 사례는 버전관리가 안된다.
+obj2를 바꿨지만, obj도 자동으로 바뀌더라(객체는 참조관계의 특성을 갖고있다.)
 
-const Tr = memo(({ rowData, rowIndex, dispatch }) => {
-  console.log('tr rendered');
-  return (
-    <tr>
-      ✔ i는 몇번째줄인지 나타냄
 
-      {Array(rowData.length).fill().map((td, i) => (
-        <Td key={i} dispatch={dispatch} rowIndex={rowIndex} cellIndex={i} cellData={rowData[i]}>{''}</Td>
-      ))}
-    </tr>
-  );
-});
+const obj = { a: 1, b: 2 };
+const obj2 = { ...obj };
+obj2.a = 3;
+obj.a // => 1
+⭕위 사례는 obj를 얕은 복사해서 원본의 불변성을 지켜주었기에 obj2.a가 바뀌었지만 obj.a는 바뀌지 않았다.
+그래서 원본의 불변성이 유지되었다. => 리액트의 버츄얼 알고리즘의 특성상 "버전관리"가 되어야하는데 이에 적합하다.
 
-export default Tr;
 
+💛React.js 
+=> 가상돔 알고리즘... 이전상태와 다음상태를 유지하고 비교해요... 바뀐 부분만 re-rendering
+```
+- 틱택토에 있는 dispatch를 table> tr> td까지 거쳐서 받아야함  
+  => 위구조가 더 복잡해지면 나중에 context api를 사용함(틱택토에서 바로 td로 넘겨받을 수 있음)
+### 🟩 [7-4. 틱택토 구현하기](https://youtu.be/xOJ5FvnBNoY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 비동기 state에서 뭔가를 처리할때  
+  => 즉, 셀이 바뀌었을때 useEffect 실행
+```js
+  useEffect(() => {
+    const [row, cell] = recentCell;
+    if (row < 0) {
+      return;
+    }
+    let win = false;
+    if (tableData[row][0] === turn && tableData[row][1] === turn && tableData[row][2] === turn) {
+      win = true;
+    }
+    if (tableData[0][cell] === turn && tableData[1][cell] === turn && tableData[2][cell] === turn) {
+      win = true;
+    }
+    if (tableData[0][0] === turn && tableData[1][1] === turn && tableData[2][2] === turn) {
+      win = true;
+    }
+    if (tableData[0][2] === turn && tableData[1][1] === turn && tableData[2][0] === turn) {
+      win = true;
+    }
+    console.log(win, row, cell, tableData, turn);
+    if (win) { // 승리시
+      dispatch({ type: SET_WINNER, winner: turn });
+      dispatch({ type: RESET_GAME });
+    } else {
+      let all = true; // all이 true면 무승부라는 뜻
+      tableData.forEach((row) => { // 무승부 검사
+        row.forEach((cell) => {
+          if (!cell) {
+            all = false;
+          }
+        });
+      });
+      if (all) {
+        dispatch({ type: SET_WINNER, winner: null });
+        dispatch({ type: RESET_GAME });
+      } else {
+        dispatch({ type: CHANGE_TURN });
+      }
+    }
+  }, [recentCell]);
 
 ```
-### 🟩 [7-4. 틱택토 구현하기]()
+3분까지 들음!!
+
 ### 🟦 [7-5. 테이블 최적화 하기]()
 ***
 ## 8 Context API
