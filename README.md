@@ -1140,15 +1140,24 @@ obj.a // => 1
 - 틱택토에 있는 dispatch를 table> tr> td까지 거쳐서 받아야함  
   => 위구조가 더 복잡해지면 나중에 context api를 사용함(틱택토에서 바로 td로 넘겨받을 수 있음)
 ### 🟩 [7-4. 틱택토 구현하기](https://youtu.be/xOJ5FvnBNoY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 한번 누른 칸은 다시 누르지 못하게 해야함
+- 누가 이겼는지 승자 판단도 필요함 or 무승부도 판단해야함
 - 비동기 state에서 뭔가를 처리할때  
   => 즉, 셀이 바뀌었을때 useEffect 실행
+
 ```js
+  //useEffect를 실행되는와중에 change turn까지 실행되어서 문제발생 => 로직순서에 맞게 chage turn 을 아래로 작성
+
   useEffect(() => {
     const [row, cell] = recentCell;
+    //한번만 클릭하게 함
     if (row < 0) {
       return;
     }
-    let win = false;
+    let win = false; //처음에는 승자가없음
+
+    //테이블 데이터를 구조분해로 검사함
+    //하나라도 모든칸이 일치하는 경우가 있다면 true
     if (tableData[row][0] === turn && tableData[row][1] === turn && tableData[row][2] === turn) {
       win = true;
     }
@@ -1166,7 +1175,7 @@ obj.a // => 1
       dispatch({ type: SET_WINNER, winner: turn });
       dispatch({ type: RESET_GAME });
     } else {
-      let all = true; // all이 true면 무승부라는 뜻
+      let all = true; //테이블이 다 채우면, 즉ㅑㅑㅑ all이 true면 무승부라는 뜻
       tableData.forEach((row) => { // 무승부 검사
         row.forEach((cell) => {
           if (!cell) {
@@ -1176,7 +1185,7 @@ obj.a // => 1
       });
       if (all) {
         dispatch({ type: SET_WINNER, winner: null });
-        dispatch({ type: RESET_GAME });
+        dispatch({ type: RESET_GAME }); //무승부이거나 누구하나 이겼을때
       } else {
         dispatch({ type: CHANGE_TURN });
       }
@@ -1184,12 +1193,45 @@ obj.a // => 1
   }, [recentCell]);
 
 ```
-3분까지 들음!!
+- useState가 너무 많아질때는  useReducer를 고려해볼것
 
-### 🟦 [7-5. 테이블 최적화 하기]()
+### 🟦 [7-5. 테이블 최적화 하기](https://youtu.be/j4hz0jXJ3HQ?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)
+- 콘솔창에 react highlights update로 확인
+- 하나의 칸만 클릭했는데 전체가 바뀌면? => 최적화
+```js
+  무엇때문에 리렌더링 되는가?
+  => useEffect, useRef로 파악할수있음
+
+  const ref = useRef([])
+  useEffect(()=>{
+
+    //🙄값이 바뀌는 지 비교해볼것
+    console.log(rowIndex === ref.current[0], cellIndex === ref.current[0], dispatch === ref.current[0], cellData === ref.current[0])
+
+    ref.current = [rowIndex, cellIndex, dispatch, cellData]
+  },[rowIndex, cellIndex, dispatch, cellData]) //각종 props를 넣어
+```
+
+- 값을 기억하는 useMemo, 😎컴포넌트😎를 기억할수도있음 => 최후의 수단
+```js
+  ...
+  return{
+    <tr>
+      {Array(rowData.length).fill().map((td,i)=>{
+        useMemo( 
+          () => <Td key={i} dispatch={dispatch} rowIndex={rowIndex} cellIndex={i} cellData={rowData[i]}>{''}</Td>,
+          [rowData[i]] //i가 바뀌었을때만 새로 렌더링
+        )
+      })
+
+      }
+    </tr>
+  }
+```
 ***
 ## 8 Context API
-### 🟥 [8-1. Context API 소개와 지뢰찾기]()
+### 🟥 [8-1. Context API 소개와 지뢰찾기](https://youtu.be/ORtqIUJkioY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)  
+
 ### 🟧 [8-2. createContext와 Provider]()
 ### 🟨 [8-3. useContext 사용해 지뢰 칸 렌]()
 ### 🟩 [8-4. 왼쪽 오른쪽 클릭 로직 작성하기]()
@@ -1209,233 +1251,4 @@ obj.a // => 1
 ### ⬛ [언젠가는 써먹을 useLayoutEffect]()
 ***
 
-## 10 개인 추가 공부
-## 1 React Hooks에 취한다
-### 🟥 [1-1. useState 15분만에 마스터하기](https://youtu.be/G3qglTF-fFI?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)  
-#### Hooks란? 
-- 함수형 컴포넌트를 class형 컴포넌트의 기능을 사용할 수 있도록 해주는 기능
-- 함수형 컴포넌트는 리렌더링 할때 무조건 새롭게 선언, 초기화, 메모리 할당을 함(stateless)
-- class형 컴포넌트는 state, life cycle로 상태관리가 용이함
-- 공식문서에서는 함수형 컴포넌트를 권장하는 추세
-#### Hooks 규칙
-1. 웬만하면 최상위에서만 호출(반복, 조건, 중첩문에서 호출할순없음)  
-  단, 반복문안에 useState는 가능.(순서가 확실할 경우)
-2. Hooks를 만들땐 앞에 'use'를 붙이기
-3. React는 Hooks 호출되는 순서에 의존함
-4.  Hooks안에 Hooks 선언 금지
-***
-#### useState
-- = 동적상태관리
-```js
-function Forem(){
-    const[name, setName] =  useState('Maby');
-          변수, 함수                  초기값
-}
-```
-### 🟧 [1-2. useEffect 깔끔하게 마스터하기](https://youtu.be/kyodvzc5GHU?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-#### useEffect
-- = sideEffect를 수행
-- (생명주기함수: mount/update/unmount)
--  class에서 componetDidMount/componetDidUpdate/componetWillUnmount
-```js
-useEffect(function persistForm(){
-    localStorage.setItem('formData', name);
-});
-
-1. }[]) 일 경우, = 의존성배열이 없는 경우 => 초기에만 렌더링
-1. }[aa]) 일 경우, = 의존성배열이 있는 경우 => 배열이 실행될때만 렌더링
-```
-```js
-useEffect(()=>{
-    ...
-    return()=>{
-
-    }
-}[])
-
-✔ 여기서, return부분은 컴포넌트가 언마운트될 때 호출
-- clean up
-- componetWillUnmount
-```
-### 🟨 [1-3. useRef 완벽 정리 1# 변수 관리](https://youtu.be/VxqZrL4FLz8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO) ~ [1-4. useRef 완벽 정리 2# DOM 요소 접근](https://youtu.be/EMK8oUUwP5Q?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-#### useRef
-1. 저장공간으로 사용
-    state의 경우, 렌더링시 내부변수들을 모두 초기화 시킴  
-    ref의 경우 변수값을 유지하되, 렌더를 발생시키지 않음(변화는 감지함)
-2. DOM에 접근
-    (예) 아이디 작성 input에 사용자가 직접 focus하지 않아도 렌더시 focus()되어있게 하는 예제
-### 🟩 [1-5. useContext + Context API ](https://youtu.be/LwvXVEHS638?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-### 🟦 [1-6. useMemo 제대로 사용하기](https://youtu.be/e-CnI8Q5RY4?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-#### useMemo
-- 컴포넌트 최적화🧹
-- 함수의 리턴값을 메모리에 기억하여 값을 재사용한다.
-- 무분별한 사용은 성능을 악화시킴
-```js
-const value = useMemo(()=>{
-    return calculate() //useMemo가 리턴해주는 값
-}[item])
-```
-### 🟪 [1-7. useCallback 짱 쉬운 강의](https://youtu.be/XfUF9qLa3mU?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-#### useCallback
-- 컴포넌트 최적화🧹
-- 컴포넌트가 렌더링 될때 특정함수를 재사용해서 재렌더링 방지
-- 자식컴포넌트에 props로 매번 함수전달할수 없기때문에 useCallback을 꼭 사용해야함
-```js
-const onSave = useCallback(()=>{
-    console.log(name)
-}[])
-
-[]이 공란인 배열이면 렌더링될때마다 초기값을 0으로 받아오기때문에 
-꼭! 재생성할 기준을 할당해야함
-```
-### 🟫 [1-8. useReducer 확실히 정리해드려요](https://youtu.be/tdORpiegLg0?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-#### useReducer
-- useState처럼 state를 생성하고 관리할수있음
-- 여러개의 '하위값'을 포함하는 복잡한 state를 다뤄야할때 사용
-- 3가지 알아야할 사항
-  1. Reducer : state를 업데이트해줌
-  2. Dispatch : state를 업데이트를 위한 요구
-  3. Action : state를 업데이트를 위한 요구 내용  
-```js
-👦🏼철수가 거래내역(state)을 업데이트하기 위해선,  
-요구(dispatch)의 '만원을 출금해주세요'라는 내용(action)을 넣어서  
-은행(reducer)에 전달, 그러면 은행은 action의 내용대로 state를 업데이트해줌
-
-Dispatch(Action) => Reducer(State, Action)
-                               ↘    ↙
-                              State Update!                   
-```
-1. 철수의 은행 예제
-```js
-import React, { useState, useReducer } from 'react';
-
-📃 깔끔하게 오브젝트로 빼두기
-const ACTION_TYPES = { 
-  deposit: "deposit",
-  withdraw: "withdraw",
-}
-
-const reducer (state, action) => {
-  💬 type에 따라 달라지기때문에 if문이나 switch문을 자주 사용함
-  ✨ 전달받은 Action만 업데이트해주기때문에 좋음!!
-
-  switch(action.type){
-    case: ACTION_TYPES.deposit :
-      return state + action.payload; //새로 업뎃되는 값
-    case: ACTION_TYPES.withdraw :
-      return state - action.payload;
-    default:
-      return: state;//이전 state
-  }
-}
-fuction App(){
-  const [number, setNumber] = useState(0);
-  const [money, dispatch] = useReducer(reducer, 0);
-  ✔ money state는 App함수 바깥에 있는 reducer함수를 통해서만 업데이트가 된다
-}
-return(
-  <>
-  <p>잔고:{money}</p> //초기값 0출력
-  <input type="number" value={number} onChange={(e)=>setNumber(parseInt(e.target.value))} step="1000"/>
-  <button onClick={()=>{dispatch({type:ACTION_TYPES.deposit, payload: number});}}>예금</button>
-  <button onClick={()=>{dispatch({type:ACTION_TYPES.withdraw, payload: number});}}>출금</button>
-  </>
-)
-
-export default App;
-```
-2. 출석부 예제
-```js
-const ACTION_TYPE = {...} //이렇게 타입을 정리할수도 있음
-
-const reducer (state, action) => {
-  switch(action.type){
-    case:'add-student':
-    const name = action.payload.name;
-    const newStudent = {
-      id: Date.now(),
-      name, //같으므로 생략
-      isHere: false,
-    }
-    return{
-      count: state.count + 1,
-      students: [...state.students, newStudent],
-    };
-    case: 'delete-student'
-      return{
-        count: state.count - 1,
-        students: state.students.filter(
-          student => student.id != action.payload.id
-        ),
-      };
-    case: 'mark-student':
-      return{
-        count: state.count.
-        students: state.students.map(student =>{
-          if(student.id === action.payload.id){
-            return{...student, isHere: !student.isHere}
-          }
-          return student;
-        })
-      }
-    default: 
-      return state;
-  }
-}
-const initialState ={
-  count: 0,//초기값 0출력
-  students:[
-    // {
-    //   id: Date.Now(),
-    //   name: 'Hitu',
-    //   isHere: false
-    // }
-  ]
-}
-fuction App(){
-  const [name, setNmae] = useState('');
-  const [studentsInfo, dispatch] = useReducer(reducer, initialState);
-}
-return(
-  <>
-  <p>총학생수:{studentsInfo.count}</p> 
-  <input type="text" value={name} onChange={(e)=>setNmae(e.target.value)}/>
-  <button 
-    onClick={(=>{dispatch(type:'add-student', payload:{name})})}>
-    추가</button>
-
-  {studentsInfo.students.map(student => {
-    return 
-    <Student 
-    key={student.id} 
-    name={student.name} 
-    dispatch={dispatch} 
-    id={student.id}
-    isHere={student.isHere}>
-  })}
-  </>
-)
-```
-```js
-//Student.Js
-const Student = ({name, dispatch, id, isHere}) => {
-  return(
-    <div>
-      <span style={(
-        textDecoration : isHere ? "line-through": "none",
-        color:  isHere ? "gray": "black",
-      )}
-      onClick={()=>{
-        dispatch({type: 'mark-student', payload:{ id }})
-      }}
-      >{name}</span>
-      <button
-      onClick={(=>{dispatch(type:'delete-student', payload:{ id })})}>삭제</button>
-    </div>
-  )
-}
-```
-### ⬛ [1-9. React.memo로 컴포넌트 최적화하기 (ft. useMemo, useCallback)](https://youtu.be/oqUgcxwrnSY?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
-### ⬜ [1-10. Custom Hooks 커스텀 훅](https://youtu.be/S6POUU2-tr8?list=PLZ5oZ2KmQEYjwhSxjB_74PoU6pmFzgVMO)
----
 🟥🟧🟨🟩🟦🟪🟫⬛
