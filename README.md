@@ -1230,9 +1230,83 @@ obj.a // => 1
 ```
 ***
 ## 8 Context API
-### 🟥 [8-1. Context API 소개와 지뢰찾기](https://youtu.be/ORtqIUJkioY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)  
+### 🤢 [지뢰찾기 게임설명](https://youtu.be/u30qf6dbIxk?t=1)
 
-### 🟧 [8-2. createContext와 Provider]()
+
+### 🟥 [8-1. Context API 소개와 지뢰찾기](https://youtu.be/ORtqIUJkioY?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn)  
+- 틱택토에서는 useReducer를 배웠음
+  - useReducer는 리덕스에서 차용을 한건데, state가 여러개일때 하나로 묶어주는 역할
+  - state를 바꿀때는 action을 dispatch해서 바꾸는..방식
+  - 리덕스와의 차이점은 리덕스는 동기적으로 바뀌는 반면, useReducer은 비동기적으로 바뀐다  
+---
+- 틱택토에서 불편했던점  
+  - table> tr> rd 까지 3번을 거쳐야 값을 불러옴
+  - 이럴때는 Context API를 사용함
+
+### 🟧 [8-2. createContext와 Provider](https://youtu.be/tRSsb7wz994?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1)
+
+```js
+//createContext 추가
+import React, { useEffect, useReducer, createContext, useMemo } from 'react';
+
+export const TableContext = createContext({
+  //초기 기본값 작성
+  tableData: [], //배열
+  halted: true, //boolean 
+  dispatch: () => {}, //함수
+});
+
+
+const MineSearch = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { tableData, halted, timer, result } = state;
+
+  const value = useMemo(() => ({ tableData, halted, dispatch }), [tableData, halted]); //table data가 바뀔때 갱신
+
+  // Provider로 묶어줘야함 🤼‍♂️
+  // 자식컴포넌트들이 부모에 접근하게됨
+  return (
+    <TableContext.Provider value={value}> 
+      ...
+    </TableContext.Provider>
+  );
+};
+
+😏참고로 dispatch는 절대 안바뀌기 때문에 바뀌는 목록에 추가하지 않아도 됨
+
+```
+
+-  세로, 가로, 지뢰개수로 이차원 배열 만들기
+```js
+const plantMine = (row, cell, mine) => {
+  console.log(row, cell, mine);
+  const candidate = Array(row * cell).fill().map((arr, i) => {
+    return i;
+  });
+  const shuffle = [];
+  while (candidate.length > row * cell - mine) {
+    const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
+    shuffle.push(chosen);
+  }
+  const data = [];
+  for (let i = 0; i < row; i++) {
+    const rowData = [];
+    data.push(rowData);
+    for (let j = 0; j < cell; j++) {
+      rowData.push(CODE.NORMAL);
+    }
+  }
+
+  for (let k = 0; k < shuffle.length; k++) {
+    const ver = Math.floor(shuffle[k] / cell);
+    const hor = shuffle[k] % cell;
+    data[ver][hor] = CODE.MINE;
+  }
+
+  console.log(data);
+  return data;
+};
+```
 ### 🟨 [8-3. useContext 사용해 지뢰 칸 렌]()
 ### 🟩 [8-4. 왼쪽 오른쪽 클릭 로직 작성하기]()
 ### 🟦 [8-5. 지뢰 개수 표시하기]()
