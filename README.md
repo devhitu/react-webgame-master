@@ -1243,7 +1243,7 @@ obj.a // => 1
   - table> tr> rd 까지 3번을 거쳐야 값을 불러옴
   - 이럴때는 Context API를 사용함
 
-### 🟧 [8-2. createContext와 Provider](https://youtu.be/tRSsb7wz994?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1)
+### 🟧 [8-2. createContext와 Provider](https://youtu.be/tRSsb7wz994?list=PLcqDmjxt30RtqbStQqk-eYMK8N-1SYIFn&t=1) ~  [8-3. useContext 사용해 지뢰 칸 렌](https://youtu.be/P2fK9Mw4mlQ?t=1)
 
 ```js
 //createContext 추가
@@ -1281,9 +1281,9 @@ const MineSearch = () => {
 const plantMine = (row, cell, mine) => {
   console.log(row, cell, mine);
   const candidate = Array(row * cell).fill().map((arr, i) => {
-    return i;
+    return i; //랜덤으로 생성
   });
-  const shuffle = [];
+  const shuffle = []; //랜덤으로 생성한 숫자를 섞는다.
   while (candidate.length > row * cell - mine) {
     const chosen = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0];
     shuffle.push(chosen);
@@ -1293,21 +1293,70 @@ const plantMine = (row, cell, mine) => {
     const rowData = [];
     data.push(rowData);
     for (let j = 0; j < cell; j++) {
-      rowData.push(CODE.NORMAL);
+      rowData.push(CODE.NORMAL); 
     }
   }
 
+  //지뢰심기 -7
   for (let k = 0; k < shuffle.length; k++) {
     const ver = Math.floor(shuffle[k] / cell);
     const hor = shuffle[k] % cell;
-    data[ver][hor] = CODE.MINE;
+    data[ver][hor] = CODE.MINE; //이차원 구조
   }
 
   console.log(data);
   return data;
 };
 ```
-### 🟨 [8-3. useContext 사용해 지뢰 칸 렌]()
+-  contextAPI
+- table.jsx
+```js
+import React, { useContext, memo } from 'react';
+import Tr from './Tr';
+import { TableContext } from './MineSearch';
+
+const Table = memo(() => {
+  const { tableData } = useContext(TableContext); //값을 불러옴
+  return (
+    <table>
+      {Array(tableData.length).fill().map((tr, i) => <Tr rowIndex={i} />)}
+    </table>
+  )
+});
+
+export default Table;
+```
+- td.jsx
+```js
+import React, { useContext, memo } from 'react';
+import { TableContext } from './MineSearch';
+
+const getTdStyle = (data) =>{
+  ...
+}
+const getTdText = (data) =>{
+  ...
+}
+
+const Td = ({ rowIndex, cellIndex } => {
+  const { tableData } = useContext(TableContext);
+
+  return (
+    <td
+      style={getTdStyle(tableData[rowIndex][cellIndex])}
+    >
+      {getTdText(tableData[rowIndex][cellIndex])} />
+      )}
+    </td>
+  )
+};
+
+export default Td;
+```
+12분 59초까지 들음
+
+### 🟨
+
 ### 🟩 [8-4. 왼쪽 오른쪽 클릭 로직 작성하기]()
 ### 🟦 [8-5. 지뢰 개수 표시하기]()
 ### 🟪 [8-6. 빈 칸들 한번에 열기]()
