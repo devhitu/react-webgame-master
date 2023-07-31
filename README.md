@@ -1353,15 +1353,171 @@ const Td = ({ rowIndex, cellIndex } => {
 
 export default Td;
 ```
-12분 59초까지 들음
 
-### 🟨
+### 🟨 [8-4. 왼쪽 오른쪽 클릭 로직 작성하기](https://youtu.be/ShPSG3UmzkY)
+- td.jsx
+```js
+  const getTdText = (code) => {
+  console.log('getTdtext');
+  switch (code) {
+    case CODE.NORMAL: //기본 칸
+      return '';
+    case CODE.MINE: //지뢰 칸
+      return 'X';
+    case CODE.CLICKED_MINE: //지뢰 밟은 칸 
+      return '펑';
+    case CODE.FLAG_MINE: //깃발 칸(클릭이 안 됨)
+    case CODE.FLAG:
+      return '!'; // 그칸에 지뢰가있다고 확신이 들때 깃발을 꽂음
+    case CODE.QUESTION_MINE: //물음표 칸 (클릭이 안 됨)
+    case CODE.QUESTION:
+      return '?';  // 그칸에 지뢰가있다고 확신이 잘 안들때 물음표 세팅
+    default:
+      return code || '';
+  }
+};
+```
+- 오른쪽 마우스 클릭 이벤트
+  - 한 번 클릭시 깃발
+  - 두 번 클릭시 물음표
+  - 세 번 클릭시 해제
+```js
+  const onRightClickTd = useCallback((e) => {
+    e.preventDefault(); //기본동작 제어
+    if (halted) { //지뢰 누를 경우 아무일도 일어나지 않게 제어
+      return;
+    }
+    switch (tableData[rowIndex][cellIndex]) {
+      case CODE.NORMAL: //기본 칸 & 지뢰 칸 인 경우
+      case CODE.MINE:
+        dispatch({ type: FLAG_CELL, row: rowIndex, cell: cellIndex });
+        return; //스위치문은 꼭 return으로 끊어줘야 함
+      case CODE.FLAG_MINE:
+      case CODE.FLAG:  //깃발 칸인 경우
+        dispatch({ type: QUESTION_CELL, row: rowIndex, cell: cellIndex });
+        return;
+      case CODE.QUESTION_MINE:
+      case CODE.QUESTION: //물음표 칸인 경우
+        dispatch({ type: NORMALIZE_CELL, row: rowIndex, cell: cellIndex });
+        return;
+      default:
+        return;
+    }
+  }, [tableData[rowIndex][cellIndex], halted]);
+```
+- 리듀서의 처리
+- 지뢰찾기/MineSearch.jsx
+- 기본 > 깃발 > 물음표 > 기본 (순환🔄)
+```js
+    case CLICK_MINE: { //지뢰 클릭시
+      const tableData = [...state.tableData];
+      tableData[action.row] = [...state.tableData[action.row]]; //불변성 보존
+      tableData[action.row][action.cell] = CODE.CLICKED_MINE; //칸을 바꿔줌
+      return {
+        ...state,
+        tableData,
+        halted: true, //지뢰를 클릭하면 game over이기때문에 다른 칸 클릭해도 아무런 동작이 없도록 halted true...
+      };
+    }
+    case FLAG_CELL: { //깃발 클릭시
+      ...
+    }
+    case QUESTION_CELL: { //물음표 클릭시
+      ...
+    }
+    case NORMALIZE_CELL: { //기본 칸 클릭시
+      ...
+    }
+```
+### 🟩 [8-5. 지뢰 개수 표시하기](https://youtu.be/PQqh5NCgt1k)
+- 빈칸을 눌렀을때 주변 지뢰갯수를 알려줘야함
+- 주변칸들이 한방에 열리는것
+  - 주변 8개가 열리면 되지만 칸 가장자리에 있는 칸들은 체킹이 어려움
+    - 주변 8칸이아니라 5칸임! 
+```js
+    case OPEN_CELL: {
+      const tableData = [...state.tableData];
+      tableData.forEach((row, i) => {
+        tableData[i] = [...row];
+      });
+      const checked = [];
+      let openedCount = 0;
+      console.log(tableData.length, tableData[0].length);
+      const checkAround = (row, cell) => {
+        console.log(row, cell);
+        if (row < 0 || row >= tableData.length || cell < 0 || cell >= tableData[0].length) {
+          return;
+        } // 상하좌우 없는칸은 안 열기
+        if ([CODE.OPENED, CODE.FLAG, CODE.FLAG_MINE, CODE.QUESTION_MINE, CODE.QUESTION].includes(tableData[row][cell])) {
+          return;
+        } // 닫힌 칸만 열기
+        if (checked.includes(row + '/' + cell)) {
+          return;
+        } else {
+          checked.push(row + '/' + cell);
+        } // 한 번 연칸은 무시하기
+        let around = [
+          tableData[row][cell - 1], tableData[row][cell + 1],
+        ];
+        if (tableData[row - 1]) {
+          around = around.concat([tableData[row - 1][cell - 1], tableData[row - 1][cell], tableData[row - 1][cell + 1]]);
+        }
+        if (tableData[row + 1]) {
+          around = around.concat([tableData[row + 1][cell - 1], tableData[row + 1][cell], tableData[row + 1][cell + 1]]);
+        }
+        const count = around.filter(function (v) {
+          return [CODE.MINE, CODE.FLAG_MINE, CODE.QUESTION_MINE].includes(v);
+        }).length;
+        if (count === 0) { // 주변칸 오픈
+          if (row > -1) {
+            const near = [];
+            if (row - 1 > -1) {
+              near.push([row -1, cell - 1]);
+              near.push([row -1, cell]);
+              near.push([row -1, cell + 1]);
+            }
+            near.push([row, cell - 1]);
+            near.push([row, cell + 1]);
+            if (row + 1 < tableData.length) {
+              near.push([row + 1, cell - 1]);
+              near.push([row + 1, cell]);
+              near.push([row + 1, cell + 1]);
+            }
+            near.forEach((n) => {
+              if (tableData[n[0]][n[1]] !== CODE.OPENED) {
+                checkAround(n[0], n[1]);
+              }
+            })
+          }
+        }
+        if (tableData[row][cell] === CODE.NORMAL) { // 내 칸이 닫힌 칸이면 카운트 증가
+          openedCount += 1;
+        }
+        tableData[row][cell] = count;
+      };
+      checkAround(action.row, action.cell);
+      let halted = false;
+      let result = '';
+      console.log(state.data.row * state.data.cell - state.data.mine, state.openedCount, openedCount);
+      if (state.data.row * state.data.cell - state.data.mine === state.openedCount + openedCount) { // 승리
+        halted = true;
+        result = `${state.timer}초만에 승리하셨습니다`;
+      }
+      return {
+        ...state,
+        tableData,
+        openedCount: state.openedCount + openedCount,
+        halted,
+        result,
+      };
+    }
+```
+3분까지 들음
+### 🟦 [8-6. 빈 칸들 한번에 열기]()
+- 빈칸들이 여러개있는 빈칸중 하나를 눌렀을때 주변칸들이 한방에 열리는것
 
-### 🟩 [8-4. 왼쪽 오른쪽 클릭 로직 작성하기]()
-### 🟦 [8-5. 지뢰 개수 표시하기]()
-### 🟪 [8-6. 빈 칸들 한번에 열기]()
-### 🟫 [8-7. 승리 조건 체크와 타이머]()
-### ⬛ [8-8. Context API 최적화]()
+### 🟪 [8-7. 승리 조건 체크와 타이머]()
+### 🟫 [8-8. Context API 최적화]() 
 ***
 ## 9 Router와 useLayoutEffect
 ### 🟥 [9-1. React Router 도입하기]()
